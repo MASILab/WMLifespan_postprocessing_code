@@ -48,13 +48,14 @@ case $arg in
 esac
 done
 
+cd /OUTPUTS
 
 ##DTI
 if [[ "$skip_dti" == false ]]; then
     echo "Starting DTI fitting..."
                                                                                             #### ADD OPTIONS FOR THE THRESHOLDING STEP ####
-    python3.10 extract_singleshell.py --outdir /OUTPUTS --inputdir /INPUTS
-    bash calc_scalars.sh /OUTPUTS dwmri%firstshell.nii.gz dwmri%firstshell.bval dwmri%firstshell.bvec /INPUTS/mask.nii.gz
+    /SCRIPTS/python3.10 extract_singleshell.py --outdir /OUTPUTS --inputdir /INPUTS
+    bash /SCRIPTS/calc_scalars.sh /OUTPUTS dwmri%firstshell.nii.gz dwmri%firstshell.bval dwmri%firstshell.bvec /INPUTS/mask.nii.gz
     #move all outputs to a DTI directory
     mkdir -p /OUTPUTS/DTI
     mv /OUTPUTS/* /OUTPUTS/DTI/
@@ -73,7 +74,7 @@ fi
 ##Tractseg
 if [[ "$skip_tractseg" == false ]]; then
     echo "Starting TractSeg..."
-    bash run_tractseg.sh
+    bash /SCRIPTS/run_tractseg.sh
     #check
     tckdir=/OUTPUTS/Tractseg/TOM_trackings
     if [[ $(ls $tckdir | grep -E '*.tck' | wc -l) -ne 72 ]]; then
@@ -89,7 +90,7 @@ fi
 ##Scilpy
 if [[ "$skip_scilpy" == false ]]; then
     echo "Starting tract bundle feature extraction (scilpy)..."
-    bash get_bundle_measurements.sh
+    bash /SCRIPTS/get_bundle_measurements.sh
     #check
     measuresdir=/OUTPUTS/Tractseg/measures
     if [[ $(ls $measuresdir | grep DTI | wc -l) -ne 72 ]]; then
@@ -107,7 +108,7 @@ fi
 if [[ "$skip_freesurfer" == false ]]; then
     echo "Starting freesurfer..."
     fsfail='0'
-    bash run_freesurfer.sh /INPUTS/T1.nii.gz /OUTPUTS/
+    bash /SCRIPTS/run_freesurfer.sh /INPUTS/T1.nii.gz /OUTPUTS/
     rm -r /OUTPUTS/fsaverage
     echo "****FINISHED FREESURFER****"
 else
@@ -132,7 +133,7 @@ regfail='0'
 if [[ "$skip_reg" == false ]]; then
     echo "Starting registration of b0 to T1..."
     mkdir -p $regdir
-    bash run_t1_b0_reg.sh /INPUTS ${fsdir} ${regdir}
+    bash /SCRIPTS/run_t1_b0_reg.sh /INPUTS ${fsdir} ${regdir}
     echo "****FINISHED DWI-T1 REGISTRATION****"
 else
     echo "Skipping DWI-T1 registration..."
@@ -159,7 +160,7 @@ if [[ "$skip_fswm" == false ]]; then
     mkdir $fswmdir
     if [[ $regfail == '0' ]]; then
         echo "Starting calculation of global WM measurements..."
-        python3.10 get_fs_global_wm_metrics.py ${fsdir}/mri/wmparc.mgz ${fsdir}/mri/rawavg.mgz ${regdir}/dwmri%ANTS_t1tob0.txt \
+        python3.10 /SCRIPTS/get_fs_global_wm_metrics.py ${fsdir}/mri/wmparc.mgz ${fsdir}/mri/rawavg.mgz ${regdir}/dwmri%ANTS_t1tob0.txt \
         ${dtidir}/fa.nii.gz ${dtidir}/md.nii.gz ${dtidir}/ad.nii.gz ${dtidir}/rd.nii.gz /INPUTS/mask.nii.gz ${fsdir}/stats/aseg.stats \
         ${fswmdir}
         #check
@@ -186,7 +187,7 @@ fi
 ## Aggregate the measurements
 if [[ "$skip_aggregate" == false ]]; then
     echo "Starting to aggregate all results..."
-    python3.10 aggregate_measurements.py
+    python3.10 /SCRIPTS/aggregate_measurements.py
     #check
     if [[ ! -e /OUTPUTS/measurements.csv ]]; then
         echo "ERROR: Aggregating measurements failed - /OUTPUTS/measurements.csv not in outputs. Exiting..."
