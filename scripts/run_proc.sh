@@ -48,7 +48,10 @@ case $arg in
 esac
 done
 
+#logistics setup
 cd /OUTPUTS
+mkdir /OUTPUTS/.matplotlib
+export MPLCONFIGDIR=/OUTPUTS/.matplotlib
 
 ##DTI
 if [[ "$skip_dti" == false ]]; then
@@ -206,4 +209,8 @@ fi
 ## Removal of intermediate files
 echo "Now removing intermediate files..."
 rm /OUTPUTS/dwmri_1mm.nii.gz /OUTPUTS/DTI/dwmri%firstshell.nii.gz /OUTPUTS/tmpmask.nii.gz
-rm -r /OUTPUTS/dwi2response-tmp-*
+#rm -r /OUTPUTS/dwi2response-tmp-*
+for d in /OUTPUTS/dwi2response-tmp-*; do
+    [ -d "$d" ] || continue
+    rm -r "$d"
+done
