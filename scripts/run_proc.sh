@@ -54,7 +54,7 @@ cd /OUTPUTS
 if [[ "$skip_dti" == false ]]; then
     echo "Starting DTI fitting..."
                                                                                             #### ADD OPTIONS FOR THE THRESHOLDING STEP ####
-    /SCRIPTS/python3.10 extract_singleshell.py --outdir /OUTPUTS --inputdir /INPUTS
+    python3.10 /SCRIPTS/extract_singleshell.py --outdir /OUTPUTS --inputdir /INPUTS
     bash /SCRIPTS/calc_scalars.sh /OUTPUTS dwmri%firstshell.nii.gz dwmri%firstshell.bval dwmri%firstshell.bvec /INPUTS/mask.nii.gz
     #move all outputs to a DTI directory
     mkdir -p /OUTPUTS/DTI
